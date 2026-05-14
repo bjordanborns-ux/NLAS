@@ -28,9 +28,9 @@ Known issues:
 
 How to run:
 
--Download repo
--Open preferred IDE
--Run python main.py
+1. Download repo
+2. Open preferred IDE
+3. Run python main.py
 
 - Python 3
 - Terminal-based
