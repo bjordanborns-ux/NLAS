@@ -1,6 +1,10 @@
 import time
 import random
 print("NorthLight Launch (Function sytem)")
+  
+# Telemetry Functions:
+
+Altitude = ()
 
 # Functions
 def weather_check():
@@ -16,7 +20,7 @@ def weather_check():
     print("Weather is No-Go. Hold Launch.")
     time.sleep(1)
     print("System Terminating.")
-# Gets called from weather
+
 def launch_approved():
     print("Weather systems verified, approved for launch.")
     time.sleep(1)
@@ -43,7 +47,7 @@ def countdown():
         time.sleep(1)
         print (countdown_list[i])    
     liftoff()
-# Defines the launch time for telemetry_timer to utilize when forming MET. 
+
 def liftofftime():
     launch_time = time.time()
     return launch_time
@@ -57,20 +61,12 @@ def liftoff():
     print("Mission Status:", mission_state)
     liftofftime()
 
-def telemetry_timer(altitude, fuel, velocity):
+def mission_timer():
+    
     current_time = time.time()
     mission_time = (current_time - liftoff_time)
-    acceleration = int (.6 * 60)
-    velocity = int (0 + (acceleration * mission_time))
-    altitude_tel = int (altitude + (velocity * mission_time))
-    altitude = altitude_tel
-    fuel_burn = acceleration * .05
-    fuel_new = int (fuel - fuel_burn)
-    fuel = fuel_new
-    print("MET: T+", convert(mission_time), "Altitude:" , altitude_tel, "Velocity:", velocity, "Fuel:", fuel, end='\r')
-    return altitude, fuel, velocity 
+    print("MET: T+", convert(mission_time), end='\r')
 
-# Converts MET to readable form instead of default. 
 def convert(mission_time):
     sec = mission_time
     min, sec = divmod(sec, 60)
@@ -79,13 +75,12 @@ def convert(mission_time):
 
 # Start of script running (outside of definitions and functions)
 weather_check()
-# Starting values for telemetry system
 liftoff_time = liftofftime()
-altitude = 0 
-fuel = 100 
-velocity = 0
-altitude, fuel, velocity = telemetry_timer(altitude, fuel, velocity)
 mission_state = "Ascent"
 while mission_state == "Ascent":
-   telemetry_timer(altitude, fuel, velocity)
+   mission_timer()
    time.sleep(1)
+
+
+
+
