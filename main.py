@@ -16,13 +16,15 @@ def weather_check():
     print("Weather is No-Go. Hold Launch.")
     time.sleep(1)
     print("System Terminating.")
+
 # Gets called from weather
 def launch_approved():
     print("Weather systems verified, approved for launch.")
     time.sleep(1)
-    print("Initating countdown sequence. T-")
+    print("Initating launch countdown sequence.")
     random_failure()
 
+# Failure set to occur if random number picked is between 90 and 100. Will launch successfully if failure occurs. 
 def random_failure():
    failure = (random.randint (0, 100))
    if failure > 90 and failure < 100:
@@ -31,18 +33,20 @@ def random_failure():
       time.sleep(1)
       mission_state = "Failed."
       print("Mission Status:", mission_state)
+      SystemExit
    elif failure > 0 and failure < 90: 
       countdown()
 
 countdown_list = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 def countdown():
     mission_state = "Countdown"
-    print("Mission Status:", mission_state)
+    print("Mission Status:", mission_state, "T -")
     for i in range(0, 10, 1): 
         countdown_list[i]
         time.sleep(1)
         print (countdown_list[i])    
-    liftoff()
+    
+
 # Defines the launch time for telemetry_timer to utilize when forming MET. 
 def liftofftime():
     launch_time = time.time()
@@ -52,12 +56,14 @@ def liftoff():
     time.sleep(1)
     print("Ignition")
     time.sleep(1)
-    print("liftoff")
+    print("Liftoff")
     mission_state = "Ascent" 
     print("Mission Status:", mission_state)
     liftofftime()
+    return mission_state
 
-def telemetry_timer(altitude, fuel, velocity):
+# Acceleration (unrealistic #) causes velocity to increase which causes altitude_tel to increase. 
+def telemetry_timer_ascent(altitude, fuel, velocity):
     current_time = time.time()
     mission_time = (current_time - liftoff_time)
     acceleration = int (.6 * 60)
@@ -70,6 +76,13 @@ def telemetry_timer(altitude, fuel, velocity):
     print("MET: T+", convert(mission_time), "Altitude:" , altitude_tel, "Velocity:", velocity, "Fuel:", fuel, end='\r')
     return altitude, fuel, velocity 
 
+# Switches to 0 acceleration which causes velocity, and altitude to slow/stop directly. Occurs when mission state is Orbit.
+def telemetry_timer_orbit(altitude, fuel, velocity):
+    current_time = time.time()
+    mission_time = (current_time - liftoff_time)
+    print("MET: T+", convert(mission_time), "Altitude:" , altitude, "Velocity:", velocity, "Fuel:", fuel, end='\r')
+    return altitude, fuel, velocity 
+
 # Converts MET to readable form instead of default. 
 def convert(mission_time):
     sec = mission_time
@@ -80,12 +93,27 @@ def convert(mission_time):
 # Start of script running (outside of definitions and functions)
 weather_check()
 # Starting values for telemetry system
+mission_state = "Checking Weather"
 liftoff_time = liftofftime()
 altitude = 0 
 fuel = 100 
 velocity = 0
-altitude, fuel, velocity = telemetry_timer(altitude, fuel, velocity)
-mission_state = "Ascent"
+mission_state = liftoff()
+# mission state gets switched to ascent during liftoff function
 while mission_state == "Ascent":
-   telemetry_timer(altitude, fuel, velocity)
+#    pulls altitude fuel and velocity values from function for loop
+   altitude, fuel, velocity = telemetry_timer_ascent(altitude, fuel, velocity)
+   time.sleep(1)
+   if altitude <= 10000:
+    telemetry_timer_ascent(altitude, fuel, velocity)
+#    After orbit is achieved mission state switches to Orbit and creates a new line
+   elif altitude >= 10000:
+    print()
+    print("Orbit insertion nominal")
+    time.sleep(1)
+    mission_state = "Orbit"
+    print("Mission Status:", mission_state, end='\n')
+
+while mission_state == "Orbit":
+   telemetry_timer_orbit(altitude, fuel, velocity)
    time.sleep(1)
