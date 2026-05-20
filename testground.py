@@ -61,25 +61,38 @@ def liftoff():
     print("Mission Status:", mission_state)
     liftofftime()
     return mission_state
-
-# Acceleration (unrealistic #) causes velocity to increase which causes altitude_tel to increase. 
-def telemetry_timer_ascent(altitude, fuel, velocity):
+# Calculates mission time for other calculations and telemetry timer to use.
+def time_calculation():
     current_time = time.time()
     mission_time = (current_time - liftoff_time)
+    return mission_time
+# Calculates acceleration for velocity and altitude calculations. Set to 0.6 Gs for testing purposes.
+def acceleration_calculation():
     acceleration = int (.6 * 60)
+    return acceleration
+# Pulls mission time and acceleration from acceleration and time calculation functions to calculate velocity.
+def velocity_calculation(mission_time, acceleration):
     velocity = int (0 + (acceleration * mission_time))
+    return velocity
+# Pulls mission time, velocity, and altitude to calculate altitude. Altitude is then returned to be used in telemetry timer and altitude calculation for next loop.
+def altitude_calculation(mission_time, velocity, altitude):
     altitude_tel = int (altitude + (velocity * mission_time))
     altitude = altitude_tel
+    return altitude
+# Pulls acceleration and fuel to calculate fuel burn and new fuel level. New fuel level is returned to telemetry_timer function.
+def fuel_calculation(acceleration, fuel): 
     fuel_burn = acceleration * .05
     fuel_new = int (fuel - fuel_burn)
     fuel = fuel_new
-    print("MET: T+", convert(mission_time), "Altitude:" , altitude_tel, "Velocity:", velocity, "Fuel:", fuel, end='\r')
-    return altitude, fuel, velocity 
+    return fuel
+
+# Acceleration (unrealistic #) causes velocity to increase which causes altitude_tel to increase. 
+def telemetry_timer_ascent(mission_time, altitude, fuel, velocity):
+    print("MET: T+", convert(mission_time), "Altitude:" , altitude, "Velocity:", velocity, "Fuel:", fuel, end='\r')
+    return altitude, fuel, velocity
 
 # Switches to 0 acceleration which causes velocity, and altitude to slow/stop directly. Occurs when mission state is Orbit.
-def telemetry_timer_orbit(altitude, fuel, velocity):
-    current_time = time.time()
-    mission_time = (current_time - liftoff_time)
+def telemetry_timer_orbit(mission_time, altitude, fuel, velocity):
     print("MET: T+", convert(mission_time), "Altitude:" , altitude, "Velocity:", velocity, "Fuel:", fuel, end='\r')
     return altitude, fuel, velocity 
 
@@ -101,11 +114,16 @@ velocity = 0
 mission_state = liftoff()
 # mission state gets switched to ascent during liftoff function
 while mission_state == "Ascent":
-#    pulls altitude fuel and velocity values from function for loop
-   altitude, fuel, velocity = telemetry_timer_ascent(altitude, fuel, velocity)
+#    sets altitude from outside of loop to calculate altitude for telemetry timer during ascent and orbit.
+   altitude = altitude_calculation(time_calculation(), velocity_calculation(time_calculation(), acceleration_calculation()), altitude)
+#    sets fuel from out of loop to calculate fuel for telemetry timer during ascent and orbit.   
+   fuel = fuel_calculation(acceleration_calculation(), fuel)
+#    sets velo to calculate velocity for telemetry timer during ascent and orbit.   
+   velocity = velocity_calculation(time_calculation(), acceleration_calculation())
    time.sleep(1)
    if altitude <= 10000:
-    telemetry_timer_ascent(altitude, fuel, velocity)
+    telemetry_timer_ascent(time_calculation(), altitude, fuel, velocity)
+
 #    After orbit is achieved mission state switches to Orbit and creates a new line
    elif altitude >= 10000:
     print()
@@ -113,7 +131,7 @@ while mission_state == "Ascent":
     time.sleep(1)
     mission_state = "Orbit"
     print("Mission Status:", mission_state, end='\n')
-
+# sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
 while mission_state == "Orbit":
-   telemetry_timer_orbit(altitude, fuel, velocity)
+   telemetry_timer_orbit(time_calculation(), altitude, fuel, velocity)
    time.sleep(1)
