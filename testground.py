@@ -1,10 +1,13 @@
 import time
 import random
 print("NorthLight Launch (Function sytem)")
+mission_state = "Ready"
+mission_log = []
 
 # Functions
 def weather_check():
    mission_state = "Checking Weather"
+   mission_log.append(append_log) 
    print("Mission Status:", mission_state)
    windspeed = int (input("Windspeed: "))
    cloudheight = int (input("Cloud Height in Feet: "))
@@ -32,7 +35,9 @@ def random_failure():
       print (random.choice(failures))
       time.sleep(1)
       mission_state = "Failed."
+      mission_log.append(append_log) 
       print("Mission Status:", mission_state)
+      print(mission_log)
       SystemExit
    elif failure > 0 and failure < 90: 
       countdown()
@@ -40,6 +45,7 @@ def random_failure():
 countdown_list = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 def countdown():
     mission_state = "Countdown"
+    mission_log.append(append_log) 
     print("Mission Status:", mission_state, "T -")
     for i in range(0, 10, 1): 
         countdown_list[i]
@@ -58,6 +64,7 @@ def liftoff():
     time.sleep(1)
     print("Liftoff")
     mission_state = "Ascent" 
+    mission_log.append(append_log) 
     print("Mission Status:", mission_state)
     liftofftime()
     return mission_state
@@ -103,6 +110,8 @@ def convert(mission_time):
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec)   
 
+append_log = ("Mission Status:", mission_state)
+
 # Start of script running (outside of definitions and functions)
 weather_check()
 # Starting values for telemetry system
@@ -130,8 +139,14 @@ while mission_state == "Ascent":
     print("Orbit insertion nominal")
     time.sleep(1)
     mission_state = "Orbit"
+    mission_log.append (append_log) 
     print("Mission Status:", mission_state, end='\n')
 # sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
-while mission_state == "Orbit":
+while mission_state == "Orbit" and time_calculation() <= 25:
    telemetry_timer_orbit(time_calculation(), altitude, fuel, velocity)
    time.sleep(1)
+
+if mission_state == "Orbit" and time_calculation() >= 25:
+   print("Mission Completed.")
+   time.sleep(2)
+   print(mission_log)
