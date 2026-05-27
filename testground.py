@@ -1,15 +1,40 @@
 import time
 import random
+import os
+log_file_path = 'log.txt'
+
 print("NorthLight Launch (Function sytem)")
 mission_state = "Ready"
-mission_log = []
+altitude = 0 
+fuel = 100 
+velocity = 0
 
 # Functions
+# when mission status changes the change is logged. dependent on mission state which func is run
 def log_event(mission_state):
    printlog = "Mission Status:"
-   append_log = [printlog, mission_state]
-   mission_log.append(append_log) 
+   if mission_state == "Checking Weather":
+      mission_logtxtinit(mission_state)
+   else:
+      mission_logtxtsec(mission_state, altitude, fuel, velocity)
    print(printlog, mission_state)
+
+# if mission state is initial (checking weather), log will erase previous log and start creating new entries.
+def mission_logtxtinit(mission_state):
+   with open(log_file_path, 'w') as log_file:
+       t = str(time_calculation)
+       log_file.write(mission_state)
+       log_file.write(t)
+
+# if mission state is past checking weather, log with skip a line and add the next mission state once reached
+def mission_logtxtsec(mission_state, altitude, fuel, velocity):
+    with open(log_file_path, 'a') as log_file:
+       log_file.write('\n')
+       log_file.write(mission_state)
+       log_file.write(str(altitude))
+       log_file.write(str(fuel))
+       log_file.write(str(velocity))
+
 
 def weather_check():
    mission_state = "Checking Weather"
@@ -149,7 +174,7 @@ while mission_state == "Orbit" and time_calculation() <= 25:
    time.sleep(1)
 
 if mission_state == "Orbit" and time_calculation() >= 25:
+#    after set time, orbit finishes and mission complete. Mission log prints with important flight events.
    print()
-   print("Mission Completed.")
-   time.sleep(2)
-   print(mission_log)
+   print("Mission Completed. Log saved.")
+   exit()
