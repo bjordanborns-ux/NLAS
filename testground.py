@@ -22,8 +22,9 @@ def log_event(mission_state):
 # if mission state is initial (checking weather), log will erase previous log and start creating new entries.
 def mission_logtxtinit(mission_state):
    with open(log_file_path, 'w') as log_file:
-       t = str(time_calculation)
+       t = converttime()
        log_file.write(mission_state)
+       log_file.write('\n')
        log_file.write(t)
 
 # if mission state is past checking weather, log with skip a line and add the next mission state once reached
@@ -31,10 +32,17 @@ def mission_logtxtsec(mission_state, altitude, fuel, velocity):
     with open(log_file_path, 'a') as log_file:
        log_file.write('\n')
        log_file.write(mission_state)
-       log_file.write(str(altitude))
-       log_file.write(str(fuel))
-       log_file.write(str(velocity))
+       log_file.write('\n')
+       log_file.write(f"altitude: {altitude}\n")
+       log_file.write(f"fuel: {fuel}\n")
+       log_file.write(f"velocity: {velocity}\n")
 
+def converttime():
+    t = time.time()
+    sec = int(t)
+    minute, sec = divmod(sec, 60)
+    hour, minute = divmod(minute, 60)
+    return '%d:%02d:%02d' % (hour, minute, sec)   
 
 def weather_check():
    mission_state = "Checking Weather"
@@ -66,7 +74,6 @@ def random_failure():
       print (random.choice(failures))
       time.sleep(1)
       log_event(mission_state)
-      print(mission_log)
       SystemExit
    elif failure > 0 and failure < 90: 
       countdown()
