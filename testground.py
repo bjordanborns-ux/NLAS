@@ -1,8 +1,9 @@
 import time
 import random
+# Why am I importing os? I don't use it anywhere in the code.
 import os
 log_file_path = 'log.txt'
-
+# Starting values for telemetry system
 print("NorthLight Launch (Function sytem)")
 mission_state = "Ready"
 altitude = 0 
@@ -40,8 +41,10 @@ def mission_logtxtsec(mission_state, altitude, fuel, velocity):
 def converttime():
     t = time.time()
     sec = int(t)
+    # what does divmod do? I don't understand it.
     minute, sec = divmod(sec, 60)
     hour, minute = divmod(minute, 60)
+    # what does % do in this context?
     return '%d:%02d:%02d' % (hour, minute, sec)   
 
 def weather_check():
@@ -58,7 +61,6 @@ def weather_check():
     time.sleep(1)
     print("System Terminating.")
     return mission_state
-
 # Gets called from weather
 def launch_approved():
     print("Weather systems verified, approved for launch.")
