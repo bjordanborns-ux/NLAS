@@ -1,7 +1,6 @@
 import time
 import random
-# Why am I importing os? I don't use it anywhere in the code.
-import os
+
 log_file_path = 'log.txt'
 # Starting values for telemetry system
 print("NorthLight Launch (Function sytem)")
@@ -20,13 +19,27 @@ def log_event(mission_state):
       mission_logtxtsec(mission_state, altitude, fuel, velocity)
    print(printlog, mission_state)
 
+def converttime():
+    t = time.time()
+    sec = int(t)
+    # divmod = how many seconds go into 1 minute with how much leftover, etc. for minutes to hours also.
+    minute, sec = divmod(sec, 60)
+    hour, minute = divmod(minute, 60)
+    # %d = put whole number here, %02d = put a 2 digit whole number here.
+    return '%d:%02d:%02d' % (hour, minute, sec)   
+
+def timestamp():
+    from time import localtime, strftime
+    return strftime("%a, %d %b %Y %H:%M:%S +0000", localtime())
+
 # if mission state is initial (checking weather), log will erase previous log and start creating new entries.
 def mission_logtxtinit(mission_state):
    with open(log_file_path, 'w') as log_file:
-       t = converttime()
+       t = timestamp()
+       timest = (t)
        log_file.write(mission_state)
        log_file.write('\n')
-       log_file.write(t)
+       log_file.write(timest)
 
 # if mission state is past checking weather, log with skip a line and add the next mission state once reached
 def mission_logtxtsec(mission_state, altitude, fuel, velocity):
@@ -37,15 +50,6 @@ def mission_logtxtsec(mission_state, altitude, fuel, velocity):
        log_file.write(f"altitude: {altitude}\n")
        log_file.write(f"fuel: {fuel}\n")
        log_file.write(f"velocity: {velocity}\n")
-
-def converttime():
-    t = time.time()
-    sec = int(t)
-    # what does divmod do? I don't understand it.
-    minute, sec = divmod(sec, 60)
-    hour, minute = divmod(minute, 60)
-    # what does % do in this context?
-    return '%d:%02d:%02d' % (hour, minute, sec)   
 
 def weather_check():
    mission_state = "Checking Weather"
@@ -59,8 +63,15 @@ def weather_check():
    else:
     print("Weather is No-Go. Hold Launch.")
     time.sleep(1)
-    print("System Terminating.")
-    return mission_state
+    weather_scrub()
+   return mission_state
+
+def weather_scrub():
+   print("Holding for Weather. Standby.")
+   time.sleep(3)
+   print("Launch scrubbed. System termination initiated.")
+   exit()
+
 # Gets called from weather
 def launch_approved():
     print("Weather systems verified, approved for launch.")
@@ -87,7 +98,7 @@ def countdown():
     for i in range(0, 10, 1): 
         countdown_list[i]
         time.sleep(1)
-        print (countdown_list[i])    
+        print (countdown_list[i])   
     return mission_state
 
 # Defines the launch time for telemetry_timer to utilize when forming MET. 
@@ -95,7 +106,7 @@ def liftofftime():
     launch_time = time.time()
     return launch_time
 
-def liftoff():
+def liftoff(mission_state):
     time.sleep(1)
     print("Ignition")
     time.sleep(1)
@@ -104,19 +115,23 @@ def liftoff():
     log_event(mission_state)
     liftofftime()
     return mission_state
+
 # Calculates mission time for other calculations and telemetry timer to use.
 def time_calculation():
     current_time = time.time()
     mission_time = (current_time - liftoff_time)
     return mission_time
+
 # Calculates acceleration for velocity and altitude calculations. Set to 0.6 Gs for testing purposes.
 def acceleration_calculation():
     acceleration = int (.6 * 60)
     return acceleration
+
 # Pulls mission time and acceleration from acceleration and time calculation functions to calculate velocity.
 def velocity_calculation(mission_time, acceleration):
     velocity = int (0 + (acceleration * mission_time))
     return velocity
+
 # Pulls mission time, velocity, and altitude to calculate altitude. Altitude is then returned to be used in telemetry timer and altitude calculation for next loop.
 def altitude_calculation(mission_time, velocity, altitude):
     altitude_tel = int (altitude + (velocity * mission_time))
@@ -146,8 +161,6 @@ def convert(mission_time):
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec)   
 
-
-
 # Start of script running (outside of definitions and functions)
 weather_check()
 printlog = "Mission Status:"
@@ -157,8 +170,10 @@ liftoff_time = liftofftime()
 altitude = 0 
 fuel = 100 
 velocity = 0
-mission_state = liftoff()
 # mission state gets switched to ascent during liftoff function
+
+mission_state = liftoff(mission_state)
+
 while mission_state == "Ascent":
 #    sets altitude from outside of loop to calculate altitude for telemetry timer during ascent and orbit.
    altitude = altitude_calculation(time_calculation(), velocity_calculation(time_calculation(), acceleration_calculation()), altitude)
