@@ -79,11 +79,18 @@ def launch_approved():
     print("Initating launch countdown sequence.")
     random_failure()
 
+# failure dictionary for failure messages and codes.
+failure_list = { 
+   "FLR-001": "M1D failure imminent",
+   "FLR-002": "Propellant Leak",
+   "FLR-003": "Guidance Calibration failed"
+}
+
 # Failure set to occur if random number picked is between 90 and 100. Will launch successfully if failure occurs. 
 def random_failure():
    failure = (random.randint (0, 100))
    if failure > 90 and failure < 100:
-      failures = ["M1D failure imminent", "Propellant Leak", "Guidance Calibration failed"]
+      failures = failure_list["FLR-001"], failure_list["FLR-002"], failure_list["FLR-003"]
       print (random.choice(failures))
       time.sleep(1)
       mission_state = "Shutdown"
@@ -171,6 +178,7 @@ liftoff_time = liftofftime()
 altitude = 0 
 fuel = 100 
 velocity = 0
+
 # mission state gets switched to ascent during liftoff function
 
 mission_state = liftoff(mission_state)
