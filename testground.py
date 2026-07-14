@@ -86,8 +86,9 @@ def random_failure():
       failures = ["M1D failure imminent", "Propellant Leak", "Guidance Calibration failed"]
       print (random.choice(failures))
       time.sleep(1)
+      mission_state = "Shutdown"
       log_event(mission_state)
-      SystemExit
+      exit()
    elif failure > 0 and failure < 90: 
       countdown()
 
