@@ -11,6 +11,9 @@ Included features (as of latest release):
 - Countdown timer and mission elapsed timer
 - Mission status updates
 
+Next release updates:
+- Mission log save after each run through
+
 Planned updates:
 
 - Multiple systems with realistic go/ no go decisions
@@ -20,7 +23,6 @@ Planned updates:
 - User selected go/ no go decision of launch
 - Realistic outcomes of user decision
 - Simple GUI for panel
-- Mission log save after each run through
 - Multiple randomized system failures
 - Advanced physics and telemetry data
 
