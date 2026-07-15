@@ -86,17 +86,18 @@ failure_list = {
    "FLR-003": "Guidance Calibration failed"
 }
 
+# TESTING set failure to occur nearly everytime. 
 # Failure set to occur if random number picked is between 90 and 100. Will launch successfully if failure occurs. 
 def random_failure():
    failure = (random.randint (0, 100))
-   if failure > 90 and failure < 100:
-      failures = failure_list["FLR-001"], failure_list["FLR-002"], failure_list["FLR-003"]
+   if failure > 2 and failure < 100:
+      failures = list(failure_list.values())
       print (random.choice(failures))
       time.sleep(1)
       mission_state = "Shutdown"
       log_event(mission_state)
       exit()
-   elif failure > 0 and failure < 90: 
+   elif failure > 0 and failure < 1: 
       countdown()
 
 countdown_list = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
