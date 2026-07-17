@@ -80,10 +80,10 @@ def launch_approved():
     random_failure()
 
 # failure dictionary for failure messages and codes.
-failure_list = { 
-   "FLR-001": "M1D failure imminent",
-   "FLR-002": "Propellant Leak",
-   "FLR-003": "Guidance Calibration failed"
+failure_list = {
+   "FLR-001": {"message" : "M1D Failure Imminent", "severity": "High", "system" : "Propulsion", "shutdown": "yes"},
+   "FLR-002": {"message": "Propellant Leak", "severity": "High", "system" : "Propulsion", "shutdown": "yes"},
+   "FLR-003": {"message" : "Guidance Calibration Failed", "severity": "Medium", "system" : "GNC", "shutdown": "no"}
 }
 
 # TESTING set failure to occur nearly everytime. 
@@ -91,12 +91,20 @@ failure_list = {
 def random_failure():
    failure = (random.randint (0, 100))
    if failure > 2 and failure < 100:
-      failures = list(failure_list.values())
-      print (random.choice(failures))
-      time.sleep(1)
-      mission_state = "Shutdown"
-      log_event(mission_state)
-      exit()
+      print("Holding launch countdown")
+      failures = list(failure_list.values())  
+      selected_failure = random.choice(failures)
+      print (selected_failure["message"], selected_failure["severity"], selected_failure["system"])
+      if selected_failure["shutdown"] == "yes":
+        time.sleep(1)
+        mission_state = "Shutdown required"
+        log_event(mission_state)
+        exit()
+      else:
+        time.sleep(1)
+        print("Component not critical, resuming countdown")
+        time.sleep(1)
+        countdown()     
    elif failure > 0 and failure < 1: 
       countdown()
 
