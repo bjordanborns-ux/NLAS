@@ -77,27 +77,31 @@ def launch_approved():
     print("Weather systems verified, approved for launch.")
     time.sleep(1)
     print("Initating launch countdown sequence.")
+    time.sleep(1)
     random_failure()
 
 # failure dictionary for failure messages and codes.
 failure_list = {
-   "FLR-001": {"message" : "M1D Failure Imminent", "severity": "High", "system" : "Propulsion", "shutdown": "yes"},
-   "FLR-002": {"message": "Propellant Leak", "severity": "High", "system" : "Propulsion", "shutdown": "yes"},
-   "FLR-003": {"message" : "Guidance Calibration Failed", "severity": "Medium", "system" : "GNC", "shutdown": "no"}
+   "FLR-001": {"message" : "M1D Failure Imminent", "severity": "High", "system" : "Propulsion", "shutdown": True},
+   "FLR-002": {"message": "Propellant Leak", "severity": "High", "system" : "Propulsion", "shutdown": True},
+   "FLR-003": {"message" : "Guidance Calibration Failed", "severity": "Medium", "system" : "GNC", "shutdown": False},
+   "FLR-004": {"message" : "Battery Failure", "severity": "Medium", "system" : "Electrical", "shutdown": False}
 }
 
 # TESTING set failure to occur nearly everytime. 
 # Failure set to occur if random number picked is between 90 and 100. Will launch successfully if failure occurs. 
 def random_failure():
    failure = (random.randint (0, 100))
-   if failure > 2 and failure < 100:
+   if failure > 90 and failure < 100:
       print("Holding launch countdown")
+      time.sleep(1)
       failures = list(failure_list.values())  
       selected_failure = random.choice(failures)
       print (selected_failure["message"], selected_failure["severity"], selected_failure["system"])
-      if selected_failure["shutdown"] == "yes":
+      if selected_failure["shutdown"]:
         time.sleep(1)
-        mission_state = "Shutdown required"
+        print("Shutdown required")
+        mission_state = "Shutdown"
         log_event(mission_state)
         exit()
       else:
@@ -105,7 +109,7 @@ def random_failure():
         print("Component not critical, resuming countdown")
         time.sleep(1)
         countdown()     
-   elif failure > 0 and failure < 1: 
+   elif failure > 0 and failure < 90: 
       countdown()
 
 countdown_list = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -161,15 +165,23 @@ def fuel_calculation(acceleration, fuel):
     fuel = fuel_new
     return fuel
 
+# Centralized mission data refactor to allow there to be only one source of telemetry and mission data. 
+telemetry_dict = {
+   "mission_state": (mission_state),
+   "velocity": 0,
+   "altitude": 0,
+   "fuel": 100
+}
+
 # Acceleration (unrealistic #) causes velocity to increase which causes altitude_tel to increase. 
 def telemetry_timer_ascent(mission_time, altitude, fuel, velocity):
-    print("MET: T+", convert(mission_time), "Altitude:" , altitude, "Velocity:", velocity, "Fuel:", fuel, end='\r')
-    return altitude, fuel, velocity
+    print("MET: T+", convert(mission_time), "Altitude:" , telemetry_dict["altitude"], "Velocity:", telemetry_dict["velocity"], "Fuel:", telemetry_dict["fuel"], end='\r')
+    return altitude, fuel, velocity, mission_time
 
 # Switches to 0 acceleration which causes velocity, and altitude to slow/stop directly. Occurs when mission state is Orbit.
 def telemetry_timer_orbit(mission_time, altitude, fuel, velocity):
-    print("MET: T+", convert(mission_time), "Altitude:" , altitude, "Velocity:", velocity, "Fuel:", fuel, end='\r')
-    return altitude, fuel, velocity 
+    print("MET: T+", convert(mission_time), "Altitude:" , telemetry_dict["altitude"], "Velocity:", telemetry_dict["velocity"], "Fuel:", telemetry_dict["fuel"], end='\r')
+    return altitude, fuel, velocity, mission_time 
 
 # Converts MET to readable form instead of default. 
 def convert(mission_time):
@@ -184,9 +196,6 @@ printlog = "Mission Status:"
 # Starting values for telemetry system
 mission_state = "Checking Weather"
 liftoff_time = liftofftime()
-altitude = 0 
-fuel = 100 
-velocity = 0
 
 # mission state gets switched to ascent during liftoff function
 
@@ -194,11 +203,17 @@ mission_state = liftoff(mission_state)
 
 while mission_state == "Ascent":
 #    sets altitude from outside of loop to calculate altitude for telemetry timer during ascent and orbit.
-   altitude = altitude_calculation(time_calculation(), velocity_calculation(time_calculation(), acceleration_calculation()), altitude)
+   telemetry_dict["altitude"] = (altitude_calculation(time_calculation(), velocity_calculation(time_calculation(), acceleration_calculation()), altitude))
+   altitude = int(telemetry_dict["altitude"])
+   altitude_limit = altitude
 #    sets fuel from out of loop to calculate fuel for telemetry timer during ascent and orbit.   
-   fuel = fuel_calculation(acceleration_calculation(), fuel)
+   telemetry_dict["fuel"] = (fuel_calculation(acceleration_calculation(), fuel))
+   fuel = int(telemetry_dict["fuel"])
+   fuel_limit = fuel
 #    sets velo to calculate velocity for telemetry timer during ascent and orbit.   
-   velocity = velocity_calculation(time_calculation(), acceleration_calculation())
+   telemetry_dict["velocity"] = (velocity_calculation(time_calculation(), acceleration_calculation()))
+   velocity = int(telemetry_dict["velocity"])
+   velocity_limit = velocity
    time.sleep(1)
    if altitude <= 10000:
     telemetry_timer_ascent(time_calculation(), altitude, fuel, velocity)
