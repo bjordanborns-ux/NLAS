@@ -5,9 +5,6 @@ log_file_path = 'log.txt'
 # Starting values for telemetry system
 print("NorthLight Launch (Function sytem)")
 mission_state = "Ready"
-altitude = 0 
-fuel = 100 
-velocity = 0
 
 # Functions
 # when mission status changes the change is logged. dependent on mission state which func is run
@@ -16,7 +13,7 @@ def log_event(mission_state):
    if mission_state == "Checking Weather":
       mission_logtxtinit(mission_state)
    else:
-      mission_logtxtsec(mission_state, altitude, fuel, velocity)
+      mission_logtxtsec(mission_state)
    print(printlog, mission_state)
 
 def converttime():
@@ -42,14 +39,14 @@ def mission_logtxtinit(mission_state):
        log_file.write(timest)
 
 # if mission state is past checking weather, log with skip a line and add the next mission state once reached
-def mission_logtxtsec(mission_state, altitude, fuel, velocity):
+def mission_logtxtsec(mission_state):
     with open(log_file_path, 'a') as log_file:
        log_file.write('\n')
        log_file.write(mission_state)
        log_file.write('\n')
-       log_file.write(f"altitude: {altitude}\n")
-       log_file.write(f"fuel: {fuel}\n")
-       log_file.write(f"velocity: {velocity}\n")
+       log_file.write(f"altitude: {telemetry_dict["altitude"]}\n")
+       log_file.write(f"fuel: {telemetry_dict["fuel"]}\n")
+       log_file.write(f"velocity: {telemetry_dict["velocity"]}\n")
 
 def weather_check():
    mission_state = "Checking Weather"
@@ -150,20 +147,20 @@ def acceleration_calculation():
 
 # Pulls mission time and acceleration from acceleration and time calculation functions to calculate velocity.
 def velocity_calculation(mission_time, acceleration):
-    velocity = int (0 + (acceleration * mission_time))
-    return velocity
+    velocity_tel = int (0 + (acceleration * mission_time))
+    return velocity_tel
 
 # Pulls mission time, velocity, and altitude to calculate altitude. Altitude is then returned to be used in telemetry timer and altitude calculation for next loop.
-def altitude_calculation(mission_time, velocity, altitude):
-    altitude_tel = int (altitude + (velocity * mission_time))
-    altitude = altitude_tel
-    return altitude
+def altitude_calculation(mission_time):
+    altitude_tel = int (telemetry_dict["altitude"] + (telemetry_dict["velocity"] * mission_time))
+    return altitude_tel
+# 
 # Pulls acceleration and fuel to calculate fuel burn and new fuel level. New fuel level is returned to telemetry_timer function.
-def fuel_calculation(acceleration, fuel): 
+def fuel_calculation(acceleration): 
     fuel_burn = acceleration * .05
-    fuel_new = int (fuel - fuel_burn)
-    fuel = fuel_new
-    return fuel
+    fuel_rem = telemetry_dict["fuel"]
+    fuel_tel = int (fuel_rem - fuel_burn)
+    return fuel_tel
 
 # Centralized mission data refactor to allow there to be only one source of telemetry and mission data. 
 telemetry_dict = {
@@ -174,14 +171,14 @@ telemetry_dict = {
 }
 
 # Acceleration (unrealistic #) causes velocity to increase which causes altitude_tel to increase. 
-def telemetry_timer_ascent(mission_time, altitude, fuel, velocity):
+def telemetry_timer_ascent(mission_time):
     print("MET: T+", convert(mission_time), "Altitude:" , telemetry_dict["altitude"], "Velocity:", telemetry_dict["velocity"], "Fuel:", telemetry_dict["fuel"], end='\r')
-    return altitude, fuel, velocity, mission_time
+    return mission_time
 
 # Switches to 0 acceleration which causes velocity, and altitude to slow/stop directly. Occurs when mission state is Orbit.
-def telemetry_timer_orbit(mission_time, altitude, fuel, velocity):
+def telemetry_timer_orbit(mission_time):
     print("MET: T+", convert(mission_time), "Altitude:" , telemetry_dict["altitude"], "Velocity:", telemetry_dict["velocity"], "Fuel:", telemetry_dict["fuel"], end='\r')
-    return altitude, fuel, velocity, mission_time 
+    return mission_time 
 
 # Converts MET to readable form instead of default. 
 def convert(mission_time):
@@ -203,23 +200,20 @@ mission_state = liftoff(mission_state)
 
 while mission_state == "Ascent":
 #    sets altitude from outside of loop to calculate altitude for telemetry timer during ascent and orbit.
-   telemetry_dict["altitude"] = (altitude_calculation(time_calculation(), velocity_calculation(time_calculation(), acceleration_calculation()), altitude))
-   altitude = int(telemetry_dict["altitude"])
-   altitude_limit = altitude
+   altitude_tel = (altitude_calculation(time_calculation()))
+   telemetry_dict["altitude"] = altitude_tel
 #    sets fuel from out of loop to calculate fuel for telemetry timer during ascent and orbit.   
-   telemetry_dict["fuel"] = (fuel_calculation(acceleration_calculation(), fuel))
-   fuel = int(telemetry_dict["fuel"])
-   fuel_limit = fuel
+   fuel_tel = fuel_calculation(acceleration_calculation())
+   telemetry_dict["fuel"] = fuel_tel
 #    sets velo to calculate velocity for telemetry timer during ascent and orbit.   
-   telemetry_dict["velocity"] = (velocity_calculation(time_calculation(), acceleration_calculation()))
-   velocity = int(telemetry_dict["velocity"])
-   velocity_limit = velocity
+   velocity_tel = (velocity_calculation(time_calculation(), acceleration_calculation()))
+   telemetry_dict["velocity"] = velocity_tel
    time.sleep(1)
-   if altitude <= 10000:
-    telemetry_timer_ascent(time_calculation(), altitude, fuel, velocity)
+   if telemetry_dict["altitude"] <= 10000:
+    telemetry_timer_ascent(time_calculation())
 
 #    After orbit is achieved mission state switches to Orbit and creates a new line
-   elif altitude >= 10000:
+   elif telemetry_dict["altitude"] >= 10000:
     print()
     print("Orbit insertion nominal")
     time.sleep(1)
@@ -227,7 +221,7 @@ while mission_state == "Ascent":
     log_event(mission_state)
 # sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
 while mission_state == "Orbit" and time_calculation() <= 25:
-   telemetry_timer_orbit(time_calculation(), altitude, fuel, velocity)
+   telemetry_timer_orbit(time_calculation())
    time.sleep(1)
 
 if mission_state == "Orbit" and time_calculation() >= 25:
