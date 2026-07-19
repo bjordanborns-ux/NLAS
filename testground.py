@@ -4,17 +4,16 @@ import random
 log_file_path = 'log.txt'
 # Starting values for telemetry system
 print("NorthLight Launch (Function sytem)")
-mission_state = "Ready"
 
 # Functions
 # when mission status changes the change is logged. dependent on mission state which func is run
-def log_event(mission_state):
+def log_event():
    printlog = "Mission Status:"
-   if mission_state == "Checking Weather":
-      mission_logtxtinit(mission_state)
+   if telemetry_dict["mission_state"] == "Checking Weather":
+      mission_logtxtinit()
    else:
-      mission_logtxtsec(mission_state)
-   print(printlog, mission_state)
+      mission_logtxtsec()
+   print(printlog, telemetry_dict["mission_state"])
 
 def converttime():
     t = time.time()
@@ -30,27 +29,27 @@ def timestamp():
     return strftime("%a, %d %b %Y %H:%M:%S +0000", localtime())
 
 # if mission state is initial (checking weather), log will erase previous log and start creating new entries.
-def mission_logtxtinit(mission_state):
+def mission_logtxtinit():
    with open(log_file_path, 'w') as log_file:
        t = timestamp()
        timest = (t)
-       log_file.write(mission_state)
+       log_file.write(telemetry_dict["mission_state"])
        log_file.write('\n')
        log_file.write(timest)
 
 # if mission state is past checking weather, log with skip a line and add the next mission state once reached
-def mission_logtxtsec(mission_state):
+def mission_logtxtsec():
     with open(log_file_path, 'a') as log_file:
        log_file.write('\n')
-       log_file.write(mission_state)
+       log_file.write(telemetry_dict["mission_state"])
        log_file.write('\n')
        log_file.write(f"altitude: {telemetry_dict["altitude"]}\n")
        log_file.write(f"fuel: {telemetry_dict["fuel"]}\n")
        log_file.write(f"velocity: {telemetry_dict["velocity"]}\n")
 
 def weather_check():
-   mission_state = "Checking Weather"
-   log_event(mission_state)
+   telemetry_dict["mission_state"] = "Checking Weather"
+   log_event()
    windspeed = int (input("Windspeed: "))
    cloudheight = int (input("Cloud Height in Feet: "))
    temp = int (input("Temperature in C: "))
@@ -61,7 +60,6 @@ def weather_check():
     print("Weather is No-Go. Hold Launch.")
     time.sleep(1)
     weather_scrub()
-   return mission_state
 
 def weather_scrub():
    print("Holding for Weather. Standby.")
@@ -98,8 +96,8 @@ def random_failure():
       if selected_failure["shutdown"]:
         time.sleep(1)
         print("Shutdown required")
-        mission_state = "Shutdown"
-        log_event(mission_state)
+        telemetry_dict["mission_state"] = "Shutdown"
+        log_event()
         exit()
       else:
         time.sleep(1)
@@ -111,28 +109,28 @@ def random_failure():
 
 countdown_list = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 def countdown():
-    mission_state = "Countdown"
-    log_event(mission_state)
+    telemetry_dict["mission_state"] = "Countdown"
+    log_event()
     for i in range(0, 10, 1): 
         countdown_list[i]
         time.sleep(1)
-        print (countdown_list[i])   
-    return mission_state
+        print (countdown_list[i])
+    liftoff()
 
 # Defines the launch time for telemetry_timer to utilize when forming MET. 
 def liftofftime():
     launch_time = time.time()
     return launch_time
 
-def liftoff(mission_state):
+def liftoff():
     time.sleep(1)
     print("Ignition")
     time.sleep(1)
     print("Liftoff")
-    mission_state = "Ascent" 
-    log_event(mission_state)
+    telemetry_dict["mission_state"] = "Ascent" 
+    log_event()
     liftofftime()
-    return mission_state
+    
 
 # Calculates mission time for other calculations and telemetry timer to use.
 def time_calculation():
@@ -164,7 +162,7 @@ def fuel_calculation(acceleration):
 
 # Centralized mission data refactor to allow there to be only one source of telemetry and mission data. 
 telemetry_dict = {
-   "mission_state": (mission_state),
+   "mission_state": "Checking Weather",
    "velocity": 0,
    "altitude": 0,
    "fuel": 100
@@ -191,14 +189,13 @@ def convert(mission_time):
 weather_check()
 printlog = "Mission Status:"
 # Starting values for telemetry system
-mission_state = "Checking Weather"
 liftoff_time = liftofftime()
+
+# runs the liftoff function after countdown ends to initiate telemetry timer ascent.
 
 # mission state gets switched to ascent during liftoff function
 
-mission_state = liftoff(mission_state)
-
-while mission_state == "Ascent":
+while telemetry_dict["mission_state"] == ("Ascent"):
 #    sets altitude from outside of loop to calculate altitude for telemetry timer during ascent and orbit.
    altitude_tel = (altitude_calculation(time_calculation()))
    telemetry_dict["altitude"] = altitude_tel
@@ -217,14 +214,14 @@ while mission_state == "Ascent":
     print()
     print("Orbit insertion nominal")
     time.sleep(1)
-    mission_state = "Orbit"
-    log_event(mission_state)
+    telemetry_dict["mission_state"] = "Orbit"
+    log_event()
 # sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
-while mission_state == "Orbit" and time_calculation() <= 25:
+while telemetry_dict["mission_state"] == "Orbit" and time_calculation() <= 25:
    telemetry_timer_orbit(time_calculation())
    time.sleep(1)
 
-if mission_state == "Orbit" and time_calculation() >= 25:
+if telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 25:
 #    after set time, orbit finishes and mission complete. Mission log prints with important flight events.
    print()
    print("Mission Completed. Log saved.")
