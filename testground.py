@@ -119,8 +119,7 @@ def countdown():
 
 # Defines the launch time for telemetry_timer to utilize when forming MET. 
 def liftofftime():
-    launch_time = time.time()
-    return launch_time
+    timer_dict["liftoff_time"] = time.time()
 
 def liftoff():
     time.sleep(1)
@@ -135,7 +134,7 @@ def liftoff():
 # Calculates mission time for other calculations and telemetry timer to use.
 def time_calculation():
     current_time = time.time()
-    mission_time = (current_time - liftoff_time)
+    mission_time = (current_time - timer_dict["liftoff_time"])
     return mission_time
 
 # Calculates acceleration for velocity and altitude calculations. Set to 0.6 Gs for testing purposes.
@@ -185,15 +184,18 @@ def convert(mission_time):
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec)   
 
+#--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 weather_check()
-printlog = "Mission Status:"
-# Starting values for telemetry system
-liftoff_time = liftofftime()
 
-# runs the liftoff function after countdown ends to initiate telemetry timer ascent.
+# Timers dictionary for ease of future timer addition.
+# liftoff_time used to calculate MET in time calculation function.
 
-# mission state gets switched to ascent during liftoff function
+timer_dict = {
+   "liftoff_time" : time.time()
+}
+
+# Mission state gets switched to ascent during liftoff function
 
 while telemetry_dict["mission_state"] == ("Ascent"):
 #    sets altitude from outside of loop to calculate altitude for telemetry timer during ascent and orbit.
@@ -209,20 +211,20 @@ while telemetry_dict["mission_state"] == ("Ascent"):
    if telemetry_dict["altitude"] <= 10000:
     telemetry_timer_ascent(time_calculation())
 
-#    After orbit is achieved mission state switches to Orbit and creates a new line
+# After orbit is achieved mission state switches to Orbit and creates a new line
    elif telemetry_dict["altitude"] >= 10000:
     print()
     print("Orbit insertion nominal")
     time.sleep(1)
     telemetry_dict["mission_state"] = "Orbit"
     log_event()
-# sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
+# Sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
 while telemetry_dict["mission_state"] == "Orbit" and time_calculation() <= 25:
    telemetry_timer_orbit(time_calculation())
    time.sleep(1)
 
 if telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 25:
-#    after set time, orbit finishes and mission complete. Mission log prints with important flight events.
+# After set time, orbit finishes and mission complete. Mission log prints with important flight events.
    print()
    print("Mission Completed. Log saved.")
    exit()
