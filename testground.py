@@ -5,6 +5,13 @@ log_file_path = 'log.txt'
 # Starting values for telemetry system
 print("NorthLight Launch (Function sytem)")
 
+# Timers dictionary for ease of future timer addition.
+# liftoff_time used to calculate MET in time calculation function.
+
+timer_dict = {
+   "liftoff_time" : time.time()
+}
+
 # Functions
 # when mission status changes the change is logged. dependent on mission state which func is run
 def log_event():
@@ -187,13 +194,6 @@ def convert(mission_time):
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 weather_check()
-
-# Timers dictionary for ease of future timer addition.
-# liftoff_time used to calculate MET in time calculation function.
-
-timer_dict = {
-   "liftoff_time" : time.time()
-}
 
 # Mission state gets switched to ascent during liftoff function
 
