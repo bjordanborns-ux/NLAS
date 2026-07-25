@@ -1,5 +1,6 @@
 import time
 import random
+import csv
 
 log_file_path = 'log.txt'
 # Starting values for telemetry system
@@ -190,10 +191,26 @@ def convert(mission_time):
     min, sec = divmod(sec, 60)
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec)   
+#-------------------------------------------------------------------
+# telemetry automatically writes to csv "telemetry.csv" every 5 seconds.
+# telemetry writes to csv initially, appends throughout running, then updates every 5 seconds using loop.
+
+def telemetrycsv():
+  if telemetry_dict["mission_state"] == "Checking Weather":
+    with open("telemetry.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["State", "Velocity", "Altitude", "Fuel"])
+        writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
+  else:
+     with open("telemetry.csv", "a", newline="" ) as f:
+        writer = csv.writer(f)
+        writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
+        time.sleep(5)
 
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 weather_check()
+telemetrycsv()
 
 # Mission state gets switched to ascent during liftoff function
 
