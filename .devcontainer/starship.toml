@@ -1,16 +1,20 @@
 # NorthLight Starship configuration
 
-add_newline = true
+add_newline = false
 command_timeout = 1000
 
-format = """
-$custom$directory$git_branch$git_status$python$cmd_duration$status$character
-"""
+format = "$custom$os$directory$git_branch$git_status$python$cmd_duration$status\n$character"
 
 [custom.northlight]
-command = "printf '🛰️'"
+command = "printf 'NorthLight Space Systems™'"
+symbol = "🛰️ "
 when = "true"
-format = "[$output ](bold cyan)"
+format = "[$symbol $output](bold cyan) "
+
+[os]
+format = "on [($name )]($style)"
+style = "bold yellow"
+disabled = false
 
 [directory]
 format = "[📁 $path](bold blue) "
@@ -18,12 +22,12 @@ truncation_length = 3
 truncate_to_repo = true
 
 [git_branch]
-symbol = " "
+symbol = "🌿 "
 format = "[$symbol$branch](bold purple) "
 
 [git_status]
 format = '([$all_status$ahead_behind]($style) )'
-style = "bold yellow"
+style = "bold red"
 
 conflicted = "=${count}"
 ahead = "⇡${count}"
@@ -49,6 +53,6 @@ disabled = false
 format = "[✗$status](bold red) "
 
 [character]
-success_symbol = "[❯](bold green) "
-error_symbol = "[❯](bold red) "
-vimcmd_symbol = "[❮](bold green)"
+success_symbol = "[>](bold green) "
+error_symbol = "[>](bold red) "
+vimcmd_symbol = "[<](bold green) "
