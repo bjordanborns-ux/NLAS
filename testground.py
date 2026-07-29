@@ -1,10 +1,15 @@
+from fileinput import filename
 import time
 import random
 import csv
 
-log_file_path = 'log.txt'
-# Starting values for telemetry system
 print("NorthLight Launch (Function sytem)")
+# prompts user to select save name only during first instance of telemetrycsv function call. After that, it will append to the same file.
+filename = input("Enter desired save name: ")
+filename = str(filename)
+
+full_filename = f'{filename}.csv' 
+log_file_path = 'log.txt'
 
 # Timers dictionary for ease of future timer addition.
 # liftoff_time used to calculate MET in time calculation function.
@@ -58,6 +63,7 @@ def mission_logtxtsec():
 def weather_check():
    telemetry_dict["mission_state"] = "Checking Weather"
    log_event()
+   telemetrycsv_save(full_filename)
    windspeed = int (input("Windspeed: "))
    cloudheight = int (input("Cloud Height in Feet: "))
    temp = int (input("Temperature in C: "))
@@ -66,6 +72,7 @@ def weather_check():
     launch_approved()
    else:
     print("Weather is No-Go. Hold Launch.")
+    telemetrycsv_update(full_filename)
     time.sleep(1)
     weather_scrub()
 
@@ -111,6 +118,7 @@ def random_failure():
         time.sleep(1)
         print("Component not critical, resuming countdown")
         time.sleep(1)
+        telemetrycsv_update(full_filename)
         countdown()     
    elif failure > 0 and failure < 90: 
       countdown()
@@ -195,22 +203,25 @@ def convert(mission_time):
 # telemetry automatically writes to csv "telemetry.csv" every 5 seconds.
 # telemetry writes to csv initially, appends throughout running, then updates every 5 seconds using loop.
 
-def telemetrycsv():
+def telemetrycsv_save(full_filename):
   if telemetry_dict["mission_state"] == "Checking Weather":
-    with open("telemetry.csv", "w", newline="") as f:
+     with open(full_filename, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["State", "Velocity", "Altitude", "Fuel"])
         writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
-  else:
-     with open("telemetry.csv", "a", newline="" ) as f:
+   
+
+def telemetrycsv_update(full_filename):
+  if telemetry_dict["mission_state"] == "Ascent" or telemetry_dict["mission_state"] == "Orbit":
+    with open(full_filename, "a", newline="" ) as f:
         writer = csv.writer(f)
         writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
-        time.sleep(5)
+        
 
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
+
 weather_check()
-telemetrycsv()
 
 # Mission state gets switched to ascent during liftoff function
 
@@ -227,7 +238,7 @@ while telemetry_dict["mission_state"] == ("Ascent"):
    time.sleep(1)
    if telemetry_dict["altitude"] <= 10000:
     telemetry_timer_ascent(time_calculation())
-
+    telemetrycsv_update(full_filename)
 # After orbit is achieved mission state switches to Orbit and creates a new line
    elif telemetry_dict["altitude"] >= 10000:
     print()
@@ -238,6 +249,7 @@ while telemetry_dict["mission_state"] == ("Ascent"):
 # Sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
 while telemetry_dict["mission_state"] == "Orbit" and time_calculation() <= 25:
    telemetry_timer_orbit(time_calculation())
+   telemetrycsv_update(full_filename)
    time.sleep(1)
 
 if telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 25:

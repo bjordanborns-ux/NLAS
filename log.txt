@@ -1,0 +1,16 @@
+Checking Weather
+Wed, 29 Jul 2026 16:44:02 +0000
+Countdown
+altitude: 0
+fuel: 100
+velocity: 0
+
+Ascent
+altitude: 0
+fuel: 100
+velocity: 0
+
+Orbit
+altitude: 11892
+fuel: 78
+velocity: 360
