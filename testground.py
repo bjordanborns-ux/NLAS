@@ -177,6 +177,7 @@ def fuel_calculation(acceleration):
 
 # Centralized mission data refactor to allow there to be only one source of telemetry and mission data. 
 telemetry_dict = {
+   "met" : timestamp(),
    "mission_state": "Checking Weather",
    "velocity": 0,
    "altitude": 0,
@@ -207,7 +208,7 @@ def telemetrycsv_save(full_filename):
   if telemetry_dict["mission_state"] == "Checking Weather":
      with open(full_filename, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["State", "Velocity", "Altitude", "Fuel"])
+        writer.writerow(["Time","State", "Velocity", "Altitude", "Fuel"])
         writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
    
 
@@ -217,7 +218,6 @@ def telemetrycsv_update(full_filename):
         writer = csv.writer(f)
         writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
         
-
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 
