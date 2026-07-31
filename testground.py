@@ -11,14 +11,6 @@ filename = str(filename)
 full_filename = f'{filename}.csv' 
 log_file_path = 'log.txt'
 
-# Timers dictionary for ease of future timer addition.
-# liftoff_time used to calculate MET in time calculation function.
-
-timer_dict = {
-   "liftoff_time" : time.time(),
-   "mission_time" : time_calculation 
-}
-
 # Functions
 # when mission status changes the change is logged. dependent on mission state which func is run
 def log_event():
@@ -99,6 +91,7 @@ failure_list = {
    "FLR-004": {"message" : "Battery Failure", "severity": "Medium", "system" : "Electrical", "shutdown": False}
 }
 
+
 # TESTING set failure to occur nearly everytime. 
 # Failure set to occur if random number picked is between 90 and 100. Will launch successfully if failure occurs. 
 def random_failure():
@@ -134,6 +127,13 @@ def countdown():
         print (countdown_list[i])
     liftoff()
 
+# Timers dictionary for ease of future timer addition.
+# liftoff_time used to calculate MET in time calculation function.
+
+timer_dict = {
+   "liftoff_time" : time.time(),
+}
+
 # Defines the launch time for telemetry_timer to utilize when forming MET. 
 def liftofftime():
     timer_dict["liftoff_time"] = time.time()
@@ -153,6 +153,10 @@ def time_calculation():
     time_update = int(current_time - timer_dict["liftoff_time"])
     return time_update
 
+met_dict = {
+   "mission_time" : time_calculation() 
+}
+
 # Calculates acceleration for velocity and altitude calculations. Set to 0.6 Gs for testing purposes.
 def acceleration_calculation():
     acceleration = int(.6 * 60)
@@ -160,12 +164,12 @@ def acceleration_calculation():
 
 # Pulls mission time and acceleration from acceleration and time calculation functions to calculate velocity.
 def velocity_calculation(acceleration):
-    velocity_tel = int(0 + (acceleration * int(timer_dict["mission_time"])))
+    velocity_tel = int(0 + (acceleration * int(met_dict["mission_time"])))
     return velocity_tel
 
 # Pulls mission time, velocity, and altitude to calculate altitude. Altitude is then returned to be used in telemetry timer and altitude calculation for next loop.
 def altitude_calculation():
-    altitude_tel = int (telemetry_dict["altitude"] + (telemetry_dict["velocity"] * int(timer_dict["mission_time"])))
+    altitude_tel = int (telemetry_dict["altitude"] + (telemetry_dict["velocity"] * int(met_dict["mission_time"])))
     return altitude_tel
 # 
 # Pulls acceleration and fuel to calculate fuel burn and new fuel level. New fuel level is returned to telemetry_timer function.
@@ -193,7 +197,7 @@ def telemetry_timer_orbit():
 
 # Converts MET to readable form instead of default. 
 def convert():
-    sec = timer_dict["mission_time"]
+    sec = met_dict["mission_time"]
     min, sec = divmod(sec, 60)
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec)   
@@ -206,25 +210,27 @@ def telemetrycsv_save(full_filename):
      with open(full_filename, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Time","State", "Velocity", "Altitude", "Fuel"])
-        writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
+        writer.writerow([met_dict["mission_time"], telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
    
 
 def telemetrycsv_update(full_filename):
   if telemetry_dict["mission_state"] == "Ascent" or telemetry_dict["mission_state"] == "Orbit":
     with open(full_filename, "a", newline="" ) as f:
         writer = csv.writer(f)
-        writer.writerow([telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
+        writer.writerow([met_dict["mission_time"], telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
         
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 
 weather_check()
 
+# ------------------------------------------------------------------------------------------------------------------------------
+# ASCENT PHASE
 # Mission state gets switched to ascent during liftoff function
-
 while telemetry_dict["mission_state"] == ("Ascent"):
 #   updates mission time starting at acent phase through time_calculaiton function.
-   timer_dict["mission_time"] = time_calculation()
+   met = (time_calculation())
+   met_dict["mission_time"] = met
 #    sets altitude from outside of loop to calculate altitude for telemetry timer during ascent and orbit.
    altitude_tel = (altitude_calculation())
    telemetry_dict["altitude"] = altitude_tel
@@ -245,8 +251,14 @@ while telemetry_dict["mission_state"] == ("Ascent"):
     time.sleep(1)
     telemetry_dict["mission_state"] = "Orbit"
     log_event()
+
+# ------------------------------------------------------------------------------------------------------------------------------
+# ORBIT PHASE
 # Sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
 while telemetry_dict["mission_state"] == "Orbit" and time_calculation() <= 25:
+   #   updates mission time for csv and telemetry time_calculaiton function during orbit phase.
+   met = (time_calculation())
+   met_dict["mission_time"] = met 
    telemetry_timer_orbit()
    telemetrycsv_update(full_filename)
    time.sleep(1)
