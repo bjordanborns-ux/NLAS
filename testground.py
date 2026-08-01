@@ -91,22 +91,29 @@ failure_list = {
    "FLR-004": {"message" : "Battery Failure", "severity": "Medium", "system" : "Electrical", "shutdown": False}
 }
 
+info_failure = {
+   "Failure": "None"
+}
 
 # TESTING set failure to occur nearly everytime. 
 # Failure set to occur if random number picked is between 90 and 100. Will launch successfully if failure occurs. 
 def random_failure():
    failure = (random.randint (0, 100))
-   if failure > 90 and failure < 100:
+   if failure > 1 and failure < 100:
       print("Holding launch countdown")
       time.sleep(1)
       failures = list(failure_list.values())  
-      selected_failure = random.choice(failures)
+      selected_failure = random.choice(failures) 
       print (selected_failure["message"], selected_failure["severity"], selected_failure["system"])
+      info = (selected_failure["message"], selected_failure["severity"], selected_failure["system"])
+      info = str(info)
+      info_failure["Failure"] = info
       if selected_failure["shutdown"]:
         time.sleep(1)
         print("Shutdown required")
         telemetry_dict["mission_state"] = "Shutdown"
         log_event()
+        failure_csv(full_filename)
         exit()
       else:
         time.sleep(1)
@@ -114,7 +121,7 @@ def random_failure():
         time.sleep(1)
         telemetrycsv_update(full_filename)
         countdown()     
-   elif failure > 0 and failure < 90: 
+   elif failure > 0 and failure < 1: 
       countdown()
 
 countdown_list = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -202,8 +209,7 @@ def convert():
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec)   
 #-------------------------------------------------------------------
-# telemetry automatically writes to csv "telemetry.csv" every 5 seconds.
-# telemetry writes to csv initially, appends throughout running, then updates every 5 seconds using loop.
+# telemetry automatically writes to csv "telemetry.csv" every second.
 
 def telemetrycsv_save(full_filename):
   if telemetry_dict["mission_state"] == "Checking Weather":
@@ -212,13 +218,20 @@ def telemetrycsv_save(full_filename):
         writer.writerow(["Time","State", "Velocity", "Altitude", "Fuel"])
         writer.writerow([met_dict["mission_time"], telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
    
-
+# appends throughout running, then updates every 5 seconds using loop.
 def telemetrycsv_update(full_filename):
   if telemetry_dict["mission_state"] == "Ascent" or telemetry_dict["mission_state"] == "Orbit":
     with open(full_filename, "a", newline="" ) as f:
         writer = csv.writer(f)
         writer.writerow([met_dict["mission_time"], telemetry_dict["mission_state"], telemetry_dict["velocity"], telemetry_dict["altitude"],telemetry_dict["fuel"]])
-        
+
+# controls telemetry csv logging during failure or weather scrub.
+# writes time, mission state in whicih the failure occured, and the information given to info_failure.
+def failure_csv(full_filename):
+   with open(full_filename, "a", newline="") as f:
+      writer = csv.writer(f)
+      writer.writerow([timestamp(), telemetry_dict["mission_state"], info_failure["Failure"]])
+
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 
