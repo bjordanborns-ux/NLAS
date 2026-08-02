@@ -8,6 +8,9 @@ print("NorthLight Launch (Function sytem)")
 filename = input("Enter desired save name: ")
 filename = str(filename)
 
+
+# ----------------------------------------------------------------
+# TELEMETRY, FAILURE, WEATHER LOGGING (.CSV and .TXT)
 full_filename = f'{filename}.csv' 
 log_file_path = 'log.txt'
 
@@ -53,15 +56,18 @@ def mission_logtxtsec():
        log_file.write(f"fuel: {telemetry_dict["fuel"]}\n")
        log_file.write(f"velocity: {telemetry_dict["velocity"]}\n")
 
+# ----------------------------------------------------------------
+# WEATHER AND RANGE CONSOLE
+
 def weather_check():
    telemetry_dict["mission_state"] = "Checking Weather"
    log_event()
    telemetrycsv_save(full_filename)
-   windspeed = int (input("Windspeed: "))
-   cloudheight = int (input("Cloud Height in Feet: "))
-   temp = int (input("Temperature in C: "))
-   precip = (input("Rain? Y or N: "))
-   if windspeed < 12 and cloudheight > 10000 and temp < 18 and precip == "N":
+   weather_info["Wind"] = int (input("Windspeed: "))
+   weather_info["Clouds"] = int (input("Cloud Height in Feet: "))
+   weather_info["Temp"] = int (input("Temperature in C: "))
+   weather_info["Rain"] = (input("Rain? Y or N: "))
+   if weather_info["Wind"] < 12 and weather_info["Clouds"] > 10000 and weather_info["Temp"] < 18 and weather_info["Rain"] == "N":
     launch_approved()
    else:
     print("Weather is No-Go. Hold Launch.")
@@ -70,10 +76,19 @@ def weather_check():
     weather_scrub()
 
 def weather_scrub():
+   telemetry_dict["mission_state"] = "Weather Scrub."
+   scrub_csv()
    print("Holding for Weather. Standby.")
    time.sleep(3)
    print("Launch scrubbed. System termination initiated.")
    exit()
+
+weather_info = {
+   "Wind" : 0 ,
+   "Clouds" : 30000 ,
+   "Temp" : 15 ,
+   "Rain" : "N"
+}
 
 # Gets called from weather
 def launch_approved():
@@ -83,6 +98,8 @@ def launch_approved():
     time.sleep(1)
     random_failure()
 
+# ----------------------------------------------------------------
+# FAILURES
 # failure dictionary for failure messages and codes.
 failure_list = {
    "FLR-001": {"message" : "M1D Failure Imminent", "severity": "High", "system" : "Propulsion", "shutdown": True},
@@ -124,6 +141,9 @@ def random_failure():
    elif failure > 0 and failure < 1: 
       countdown()
 
+# ----------------------------------------------------------------
+# COUNTDOWN/LIFTOFF
+
 countdown_list = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 def countdown():
     telemetry_dict["mission_state"] = "Countdown"
@@ -153,7 +173,9 @@ def liftoff():
     telemetry_dict["mission_state"] = "Ascent" 
     log_event()
     liftofftime()
-    
+
+# ----------------------------------------------------------------
+# TELEMETRY AND TIME CALCULATIONS
 # Calculates mission time for other calculations and telemetry timer to use.
 def time_calculation():
     current_time = time.time()
@@ -186,6 +208,9 @@ def fuel_calculation(acceleration):
     fuel_tel = int (fuel_rem - fuel_burn)
     return fuel_tel
 
+
+# ----------------------------------------------------------------
+# TELEMETRY AND MET DISPLAY
 # Centralized mission data refactor to allow there to be only one source of telemetry and mission data. 
 telemetry_dict = {
    "mission_state": "Checking Weather",
@@ -194,6 +219,7 @@ telemetry_dict = {
    "fuel": 100
 }
 
+# Continues monitoring telemetry and switching timer during ascent phase of flight
 # Acceleration (unrealistic #) causes velocity to increase which causes altitude_tel to increase. 
 def telemetry_timer_ascent():
     print("MET: T+", convert(), "Altitude:" , telemetry_dict["altitude"], "Velocity:", telemetry_dict["velocity"], "Fuel:", telemetry_dict["fuel"], end='\r')
@@ -232,6 +258,12 @@ def failure_csv(full_filename):
       writer = csv.writer(f)
       writer.writerow([timestamp(), telemetry_dict["mission_state"], info_failure["Failure"]])
 
+# writes time, and weather conditions stored into weather dictionary, if weather scrub is triggered. 
+def scrub_csv():
+      with open(full_filename, "w", newline="") as f:
+         writer = csv.writer(f)
+         writer.writerow(["Time", "Wind", "Clouds", "Temp", "Rain"])
+         writer.writerow([timestamp(), weather_info["Wind"], weather_info["Clouds"], weather_info["Temp"], weather_info["Rain"]])
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 
