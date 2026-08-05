@@ -116,7 +116,7 @@ info_failure = {
 # Failure set to occur if random number picked is between 90 and 100. Will launch successfully if failure occurs. 
 def random_failure():
    failure = (random.randint (0, 100))
-   if failure > 1 and failure < 100:
+   if failure > 90 and failure < 100:
       print("Holding launch countdown")
       time.sleep(1)
       failures = list(failure_list.values())  
@@ -138,7 +138,7 @@ def random_failure():
         time.sleep(1)
         telemetrycsv_update(full_filename)
         countdown()     
-   elif failure > 0 and failure < 1: 
+   elif failure > 0 and failure < 90: 
       countdown()
 
 # ----------------------------------------------------------------
