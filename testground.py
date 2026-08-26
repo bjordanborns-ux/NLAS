@@ -8,7 +8,6 @@ print("NorthLight Launch (Function sytem)")
 filename = input("Enter desired save name: ")
 filename = str(filename)
 
-
 # ----------------------------------------------------------------
 # TELEMETRY, FAILURE, WEATHER LOGGING (.CSV and .TXT)
 full_filename = f'{filename}.csv' 
@@ -300,7 +299,7 @@ while telemetry_dict["mission_state"] == ("Ascent"):
 # ------------------------------------------------------------------------------------------------------------------------------
 # ORBIT PHASE
 # Sets orbit telemetry timer function to run after orbit achieved. Pulls time, altitude, fuel, velocity from ascent function. 
-while telemetry_dict["mission_state"] == "Orbit" and time_calculation() <= 25:
+while telemetry_dict["mission_state"] == "Orbit" and time_calculation() < 25:
    #   updates mission time for csv and telemetry time_calculaiton function during orbit phase.
    met = (time_calculation())
    met_dict["mission_time"] = met 
@@ -308,7 +307,16 @@ while telemetry_dict["mission_state"] == "Orbit" and time_calculation() <= 25:
    telemetrycsv_update(full_filename)
    time.sleep(1)
 
-if telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 25:
+while telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 25 and time_calculation() <= 45:
+   met = (time_calculation())
+   met_dict["mission_time"] = met
+   telemetry_dict["velocity"] = 400
+   telemetry_timer_orbit()
+   altitude_tel = (altitude_calculation())
+   telemetry_dict["altitude"] = altitude_tel
+   time.sleep(1)
+   
+if telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 45 and time_calculation() < 59:
 # After set time, orbit finishes and mission complete. Mission log prints with important flight events.
    print()
    print("Mission Completed. Log saved.")
