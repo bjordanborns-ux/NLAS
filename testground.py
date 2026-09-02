@@ -2,6 +2,7 @@ from fileinput import filename
 import time
 import random
 import csv
+import json
 
 print("NorthLight Launch (Function sytem)")
 # prompts user to select save name only during first instance of telemetrycsv function call. After that, it will append to the same file.
@@ -66,6 +67,7 @@ def weather_check():
    weather_info["Clouds"] = int (input("Cloud Height in Feet: "))
    weather_info["Temp"] = int (input("Temperature in C: "))
    weather_info["Rain"] = (input("Rain? Y or N: "))
+   weather_json()
    if weather_info["Wind"] < 12 and weather_info["Clouds"] > 10000 and weather_info["Temp"] < 18 and weather_info["Rain"] == "N":
     launch_approved()
    else:
@@ -82,12 +84,19 @@ def weather_scrub():
    print("Launch scrubbed. System termination initiated.")
    exit()
 
+      
 weather_info = {
    "Wind" : 0 ,
    "Clouds" : 30000 ,
    "Temp" : 15 ,
    "Rain" : "N"
 }
+
+weather_json = json.dumps(weather_info)
+
+def update_weather_json():
+   with open("weather.json", "w") as f:
+      json.dump(weather_info, f, indent=4)
 
 # Gets called from weather
 def launch_approved():
@@ -232,7 +241,16 @@ def convert():
     sec = met_dict["mission_time"]
     min, sec = divmod(sec, 60)
     hour, min = divmod(min, 60)
-    return '%d:%02d:%02d' % (hour, min, sec)   
+    return '%d:%02d:%02d' % (hour, min, sec) 
+
+json_telemetry = json.dumps(telemetry_dict)
+
+def json_update_telemetry():
+   with open("telemetry.json", "w") as f:
+      json.dump(telemetry_dict, f, indent=4)
+      time.sleep(1)
+   
+
 #-------------------------------------------------------------------
 # telemetry automatically writes to csv "telemetry.csv" every second.
 
@@ -284,6 +302,7 @@ while telemetry_dict["mission_state"] == ("Ascent"):
 #    sets velo to calculate velocity for telemetry timer during ascent and orbit.   
    velocity_tel = (velocity_calculation(acceleration_calculation()))
    telemetry_dict["velocity"] = velocity_tel
+   json_update_telemetry()
    time.sleep(1)
    if telemetry_dict["altitude"] <= 10000:
     telemetry_timer_ascent()
