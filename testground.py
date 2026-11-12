@@ -67,7 +67,7 @@ def weather_check():
    weather_info["Clouds"] = int (input("Cloud Height in Feet: "))
    weather_info["Temp"] = int (input("Temperature in C: "))
    weather_info["Rain"] = (input("Rain? Y or N: "))
-   weather_json()
+   update_weather_json()
    if weather_info["Wind"] < 12 and weather_info["Clouds"] > 10000 and weather_info["Temp"] < 18 and weather_info["Rain"] == "N":
     launch_approved()
    else:
