@@ -10,9 +10,9 @@ Northlight Launch Awareness System (NLAS) is a Python launch display project bui
 - Randomized system failures
 - Countdown timer and mission elapsed timer
 - Mission status updates
-
-### Next update:
-- Save mission log after each run.
+- Writes a telemetry CSV and a mission log (log.txt).
+  - Use a unique CSV name for each run.
+  - log.txt resets at the start of each run.
 
 ### Planned updates:
 
@@ -33,9 +33,17 @@ Northlight Launch Awareness System (NLAS) is a Python launch display project bui
 3. Run `python main.py`
 
 ### Requirements
-- Python 3
+- Python 3.12+
   
 *NLAS currently runs in the terminal.*
+
+### Weather GO/NO-GO verification
+
+Eight scenarios were checked against the expected weather decision.
+All eight matched. The all-clear case returned GO. The simulator
+returned NO-GO at and beyond each numeric limit and when rain was
+present. The checks evaluated the weather decision before simulated
+system failures.
 
 ### Contact
 Questions, comments, concerns? 
