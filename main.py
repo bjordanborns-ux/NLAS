@@ -63,10 +63,10 @@ def weather_check():
    telemetry_dict["mission_state"] = "Checking Weather"
    log_event()
    telemetrycsv_save(full_filename)
-   weather_info["Wind"] = int (input("Windspeed: "))
-   weather_info["Clouds"] = int (input("Cloud Height in Feet: "))
-   weather_info["Temp"] = int (input("Temperature in C: "))
-   weather_info["Rain"] = (input("Rain? Y or N: "))
+   weather_info["Wind"] = int(input("Windspeed: "))
+   weather_info["Clouds"] = int(input("Cloud Height in Feet: "))
+   weather_info["Temp"] = int(input("Temperature in C: "))
+   weather_info["Rain"] = (input("Rain? Y or N: ")).strip().upper()
    update_weather_json()
    if weather_info["Wind"] < 12 and weather_info["Clouds"] > 10000 and weather_info["Temp"] < 18 and weather_info["Rain"] == "N":
     launch_approved()
@@ -309,11 +309,11 @@ while telemetry_dict["mission_state"] == ("Ascent"):
    telemetry_dict["velocity"] = velocity_tel
    json_update_telemetry()
    time.sleep(1)
-   if telemetry_dict["altitude"] <= 10000:
+   if telemetry_dict["altitude"] <= 100000:
     telemetry_timer_ascent()
     telemetrycsv_update(full_filename)
 # After orbit is achieved mission state switches to Orbit and creates a new line
-   elif telemetry_dict["altitude"] >= 10000:
+   elif telemetry_dict["altitude"] >= 100000:
     print()
     print("Orbit insertion nominal")
     time.sleep(1)
@@ -343,5 +343,5 @@ while telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 25 an
 if telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 45 and time_calculation() < 59:
 # After set time, orbit finishes and mission complete. Mission log prints with important flight events.
    print()
-   print("Mission Completed. Log saved.")
+   print("Orbit Insertion Nominal. Log saved.")
    exit()
