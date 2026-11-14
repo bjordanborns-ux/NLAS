@@ -343,5 +343,5 @@ while telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 25 an
 if telemetry_dict["mission_state"] == "Orbit" and time_calculation() >= 45 and time_calculation() < 59:
 # After set time, orbit finishes and mission complete. Mission log prints with important flight events.
    print()
-   print("Orbit Insertion Nominal. Log saved.")
+   print("Orbit Raised to Correct Altitude. Log saved.")
    exit()
