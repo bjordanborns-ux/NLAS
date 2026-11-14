@@ -4,7 +4,7 @@ import random
 import csv
 import json
 
-print("NorthLight Launch (Function sytem)")
+print("NorthLight Launch Awareness System")
 # prompts user to select save name only during first instance of telemetrycsv function call. After that, it will append to the same file.
 filename = input("Enter desired save name: ")
 filename = str(filename)
