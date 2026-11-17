@@ -100,11 +100,50 @@ def update_weather_json():
 
 # Gets called from weather
 def launch_approved():
-    print("Weather systems verified, approved for launch.")
+    print("Weather systems verified, starting system Go/No-Go polling.")
     time.sleep(1)
-    print("Initating launch countdown sequence.")
-    time.sleep(1)
-    random_failure()
+    systems_poll()
+
+# ----------------------------------------------------------------
+# Systems GO/NO-GO
+# User input system go/no-go functions.
+system_status = {
+   "Weather" : "",
+   "Propulsion" : "",
+   "GNC" : "",
+   "Electrical" : ""
+}
+
+def systems_poll():
+   for i in system_status:
+      if i == "Weather":
+                  print("Automated weather verification passed.")
+                  print("Requesting final Weather Officer GO/NO-GO.")
+      while True:   
+         status = input(f"Enter {i} GO/NO-GO Status: ").strip().upper()
+         if status in ("GO", "NO-GO"):
+            system_status[i] = status
+            break
+         else:
+            print("Invalid input. Enter Go or No-go.")
+   print("SYSTEMS POLL COMPLETE")
+   print("\n========== NLAS SYSTEMS POLL ==========\n")
+
+   for system, status in system_status.items():
+      print(f"{system:<15} {status}")
+
+   print("\n---------------------------------------")
+
+   if all(status == "GO" for status in system_status.values()):
+      print("FINAL LAUNCH STATUS: GO")
+      print("---------------------------------------")
+      time.sleep(1)
+      random_failure()
+   else:
+      telemetry_dict["mission_state"] = "Hold"
+      log_event()
+      print("FINAL LAUNCH STATUS: HOLD")
+      print("---------------------------------------")
 
 # ----------------------------------------------------------------
 # FAILURES
@@ -148,13 +187,6 @@ def random_failure():
         countdown()     
    elif failure >= 0 and failure < 90: 
       countdown()
-
-system_status = {
-   "Weather" : "",
-   "Propulsion" : "",
-   "GNC" : "",
-   "Electrical" : ""
-}
 
 # ----------------------------------------------------------------
 # COUNTDOWN/LIFTOFF
