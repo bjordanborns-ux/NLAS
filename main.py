@@ -68,7 +68,7 @@ def weather_check():
    weather_info["Temp"] = int(input("Temperature in C: "))
    weather_info["Rain"] = (input("Rain? Y or N: ")).strip().upper()
    update_weather_json()
-   if weather_info["Wind"] < 12 and weather_info["Clouds"] > 10000 and weather_info["Temp"] < 18 and weather_info["Rain"] == "N":
+   if weather_info["Wind"] < 12 and weather_info["Clouds"] > 10000 and weather_info["Temp"] < 18 and weather_info["Temp"] > 10 and weather_info["Rain"] == "N":
     launch_approved()
    else:
     print("WARNING: Automated weather verification failed.")
