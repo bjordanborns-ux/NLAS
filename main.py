@@ -9,7 +9,7 @@ print("NorthLight Launch Awareness System")
 filename = input("Enter desired save name: ")
 filename = str(filename)
 
-TEST_MODE = False
+TEST_MODE = True
 
 def timesleep1():
     if not TEST_MODE:
@@ -345,7 +345,7 @@ while telemetry_dict["mission_state"] == ("Ascent"):
    velocity_tel = (velocity_calculation(acceleration))
    telemetry_dict["velocity"] = velocity_tel
    json_update_telemetry()
-   timesleep1()
+   time.sleep(1)
    if telemetry_dict["altitude"] <= 100000:
     telemetry_timer()
     telemetrycsv_update(full_filename)
@@ -353,7 +353,7 @@ while telemetry_dict["mission_state"] == ("Ascent"):
    elif telemetry_dict["altitude"] >= 100000:
     print()
     print("Orbit insertion nominal. Raising Orbit")
-    timesleep1()
+    time.sleep(1)
     telemetry_dict["mission_state"] = "Raising Orbit"
     orbit_start_time = time_calculation()
     log_event()
@@ -367,7 +367,7 @@ while telemetry_dict["mission_state"] == "Raising Orbit" and time_calculation()-
    met_dict["mission_time"] = met 
    telemetry_timer()
    telemetrycsv_update(full_filename)
-   timesleep1()
+   time.sleep(1)
 
 while telemetry_dict["mission_state"] == "Raising Orbit" and time_calculation()-orbit_start_time >= 25 and time_calculation()-orbit_start_time <= 45:
    met = (time_calculation())
@@ -375,7 +375,7 @@ while telemetry_dict["mission_state"] == "Raising Orbit" and time_calculation()-
    telemetry_dict["velocity"] = 400
    telemetry_timer()
    telemetry_dict["altitude"] = altitude_tel
-   timesleep1()
+   time.sleep(1)
    
 if telemetry_dict["mission_state"] == "Raising Orbit" and time_calculation()-orbit_start_time >= 45:
 # After set time, orbit finishes and mission complete. Mission log prints with important flight events.
