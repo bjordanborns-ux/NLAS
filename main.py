@@ -9,6 +9,12 @@ print("NorthLight Launch Awareness System")
 filename = input("Enter desired save name: ")
 filename = str(filename)
 
+TEST_MODE = False
+
+def timesleep1():
+    if not TEST_MODE:
+        time.sleep(1)
+
 # ----------------------------------------------------------------
 # TELEMETRY, FAILURE, WEATHER LOGGING (.CSV and .TXT)
 full_filename = f'{filename}.csv' 
@@ -74,7 +80,7 @@ def weather_check():
     print("WARNING: Automated weather verification failed.")
     systems_poll(weather_ok=False)
     telemetrycsv_update(full_filename)
-    time.sleep(1)
+    timesleep1()
 
 def hold_procedure():
     telemetry_dict["mission_state"] = "Hold"
@@ -103,7 +109,7 @@ def update_weather_json():
 # Gets called from weather
 def launch_approved():
     print("Weather systems verified, starting system Go/No-Go polling.")
-    time.sleep(1)
+    timesleep1()
     systems_poll(weather_ok=True)
 
 # ----------------------------------------------------------------
@@ -139,7 +145,7 @@ def systems_poll(weather_ok):
    if weather_ok and all(status == "GO" for status in system_status.values()):
     print("FINAL LAUNCH STATUS: GO")
     print("---------------------------------------")
-    time.sleep(1)
+    timesleep1()
     random_failure()
    else:
       hold_procedure()
@@ -164,7 +170,7 @@ def random_failure():
    failure = (random.randint (0, 100))
    if failure >= 90 and failure <= 100:
       print("Holding launch countdown")
-      time.sleep(1)
+      timesleep1()
       failures = list(failure_list.values())  
       selected_failure = random.choice(failures) 
       print (selected_failure["message"], selected_failure["severity"], selected_failure["system"])
@@ -172,16 +178,16 @@ def random_failure():
       info = str(info)
       info_failure["Failure"] = info
       if selected_failure["shutdown"]:
-        time.sleep(1)
+        timesleep1()
         print("Shutdown required")
         telemetry_dict["mission_state"] = "Shutdown"
         log_event()
         failure_csv(full_filename)
         exit()
       else:
-        time.sleep(1)
+        timesleep1()
         print("Component not critical, resuming countdown")
-        time.sleep(1)
+        timesleep1()
         telemetrycsv_update(full_filename)
         countdown()     
    elif failure >= 0 and failure < 90: 
@@ -196,7 +202,7 @@ def countdown():
     log_event()
     for i in range(0, 10, 1): 
         countdown_list[i]
-        time.sleep(1)
+        timesleep1()
         print (countdown_list[i])
     liftoff()
 
@@ -212,9 +218,9 @@ def liftofftime():
     timer_dict["liftoff_time"] = time.time()
 
 def liftoff():
-    time.sleep(1)
+    timesleep1()
     print("Ignition")
-    time.sleep(1)
+    timesleep1()
     print("Liftoff")
     telemetry_dict["mission_state"] = "Ascent" 
     log_event()
@@ -270,19 +276,15 @@ telemetry_dict = {
 
 # Continues monitoring telemetry and switching timer during ascent phase of flight
 # Acceleration (unrealistic #) causes velocity to increase which causes altitude_tel to increase. 
-def telemetry_timer_ascent():
-    print("MET: T+", convert(), "Altitude:" , telemetry_dict["altitude"], "Velocity:", telemetry_dict["velocity"], "Fuel:", telemetry_dict["fuel"], end='\r')
-
-# Switches to 0 acceleration which causes velocity, and altitude to slow/stop directly. Occurs when mission state is Orbit.
-def telemetry_timer_orbit():
-    print("MET: T+", convert(), "Altitude:" , telemetry_dict["altitude"], "Velocity:", telemetry_dict["velocity"], "Fuel:", telemetry_dict["fuel"], end='\r')
-
 # Converts MET to readable form instead of default. 
 def convert():
     sec = met_dict["mission_time"]
     min, sec = divmod(sec, 60)
     hour, min = divmod(min, 60)
     return '%d:%02d:%02d' % (hour, min, sec) 
+
+def telemetry_timer():
+    print(f"MET: T+{convert()} Altitude: {telemetry_dict["altitude"]:.2f} Velocity: {telemetry_dict["velocity"]:.2f} Fuel: {telemetry_dict["fuel"]:.2f}", end='\r')
 
 json_telemetry = json.dumps(telemetry_dict)
 
@@ -343,15 +345,15 @@ while telemetry_dict["mission_state"] == ("Ascent"):
    velocity_tel = (velocity_calculation(acceleration))
    telemetry_dict["velocity"] = velocity_tel
    json_update_telemetry()
-   time.sleep(1)
+   timesleep1()
    if telemetry_dict["altitude"] <= 100000:
-    telemetry_timer_ascent()
+    telemetry_timer()
     telemetrycsv_update(full_filename)
 # After orbit is achieved mission state switches to Orbit and creates a new line
    elif telemetry_dict["altitude"] >= 100000:
     print()
     print("Orbit insertion nominal. Raising Orbit")
-    time.sleep(1)
+    timesleep1()
     telemetry_dict["mission_state"] = "Raising Orbit"
     orbit_start_time = time_calculation()
     log_event()
@@ -363,17 +365,17 @@ while telemetry_dict["mission_state"] == "Raising Orbit" and time_calculation()-
    #   updates mission time for csv and telemetry time_calculaiton function during orbit phase.
    met = (time_calculation())
    met_dict["mission_time"] = met 
-   telemetry_timer_orbit()
+   telemetry_timer()
    telemetrycsv_update(full_filename)
-   time.sleep(1)
+   timesleep1()
 
 while telemetry_dict["mission_state"] == "Raising Orbit" and time_calculation()-orbit_start_time >= 25 and time_calculation()-orbit_start_time <= 45:
    met = (time_calculation())
    met_dict["mission_time"] = met
    telemetry_dict["velocity"] = 400
-   telemetry_timer_orbit()
+   telemetry_timer()
    telemetry_dict["altitude"] = altitude_tel
-   time.sleep(1)
+   timesleep1()
    
 if telemetry_dict["mission_state"] == "Raising Orbit" and time_calculation()-orbit_start_time >= 45:
 # After set time, orbit finishes and mission complete. Mission log prints with important flight events.
