@@ -98,9 +98,72 @@ Eight verification scenarios were executed to evaluate the NLAS pre-launch GO/NO
 
 The following output is from a simulated NLAS launch:
 
+```
+NorthLight Launch Awareness System
+Enter desired save name: test
+Mission Status: Checking Weather
+Windspeed: 0
+Cloud Height in Feet: 30000
+Temperature in C: 17
+Rain? Y or N: N
+Weather systems verified, starting system Go/No-Go polling.
+Automated weather verification status: True
+Requesting final Weather Officer GO/NO-GO.
+Enter Weather GO/NO-GO Status: GO
+Enter Propulsion GO/NO-GO Status: GO
+Enter GNC GO/NO-GO Status: GO
+Enter Electrical GO/NO-GO Status: GO
+SYSTEMS POLL COMPLETE
+
+========== NLAS SYSTEMS POLL ==========
+
+Weather         GO
+Propulsion      GO
+GNC             GO
+Electrical      GO
+
+---------------------------------------
+FINAL LAUNCH STATUS: GO
+---------------------------------------
+Mission Status: Countdown
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+Ignition
+Liftoff
+Mission Status: Ascent
+MET: T+0:03:04 Altitude: 99638.21 Velocity: 1083.02 Fuel: 44.80
+Orbit insertion nominal. Raising Orbit
+Mission Status: Raising Orbit
+MET: T+0:03:37 Altitude: 100724.18 Velocity: 400.00 Fuel: 44.500
+Orbit Raised to Correct Altitude. Log saved.
+```
+
 ## Example Telemetry CSV Output
 
-NLAS generates a CSV file containing telemetry data from the simulated mission.
+NLAS generates a CSV file containing telemetry data from the simulated mission (10 Second example).
+```
+Time,State,Velocity,Altitude,Fuel
+0,Checking Weather,0,0,100
+0,Ascent,0.0,0.0,100.0
+1,Ascent,5.886,2.943,99.7
+2,Ascent,11.772,11.772,99.4
+3,Ascent,17.658,26.487000000000002,99.1
+4,Ascent,23.544,47.088,98.8
+5,Ascent,29.43,73.575,98.5
+6,Ascent,35.316,105.94800000000001,98.2
+7,Ascent,41.202,144.207,97.9
+8,Ascent,47.088,188.352,97.6
+9,Ascent,52.974000000000004,238.383,97.3
+10,Ascent,58.86,294.3,97.0
+```
 
 ## Contact
 
