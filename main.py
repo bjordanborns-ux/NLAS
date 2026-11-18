@@ -144,6 +144,8 @@ def systems_poll():
       log_event()
       print("FINAL LAUNCH STATUS: HOLD")
       print("---------------------------------------")
+      time.sleep(1)
+      print("Log saved. Exiting...")
 
 # ----------------------------------------------------------------
 # FAILURES
