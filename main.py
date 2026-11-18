@@ -71,18 +71,20 @@ def weather_check():
    if weather_info["Wind"] < 12 and weather_info["Clouds"] > 10000 and weather_info["Temp"] < 18 and weather_info["Rain"] == "N":
     launch_approved()
    else:
-    print("Weather is No-Go. Hold Launch.")
+    print("WARNING: Automated weather verification failed.")
+    systems_poll(weather_ok=False)
     telemetrycsv_update(full_filename)
     time.sleep(1)
-    weather_scrub()
 
-def weather_scrub():
-   telemetry_dict["mission_state"] = "Weather Scrub."
-   scrub_csv()
-   print("Holding for Weather. Standby.")
-   time.sleep(3)
-   print("Launch scrubbed. System termination initiated.")
-   exit()
+def hold_procedure():
+    telemetry_dict["mission_state"] = "Hold"
+    log_event()
+    hold_feedback_csv()
+    print("\n========== NLAS LAUNCH HOLD ==========")
+    print("LAUNCH STATUS: HOLD")
+    print("Countdown authorization denied.")
+    print("======================================")
+    raise SystemExit
 
       
 weather_info = {
@@ -100,11 +102,47 @@ def update_weather_json():
 
 # Gets called from weather
 def launch_approved():
-    print("Weather systems verified, approved for launch.")
+    print("Weather systems verified, starting system Go/No-Go polling.")
     time.sleep(1)
-    print("Initating launch countdown sequence.")
+    systems_poll(weather_ok=True)
+
+# ----------------------------------------------------------------
+# Systems GO/NO-GO
+# User input system go/no-go functions.
+system_status = {
+   "Weather" : "",
+   "Propulsion" : "",
+   "GNC" : "",
+   "Electrical" : ""
+}
+
+def systems_poll(weather_ok):
+   for i in system_status:
+      if i == "Weather":
+                  print(f"Automated weather verification status: {weather_ok}")
+                  print("Requesting final Weather Officer GO/NO-GO.")
+      while True:   
+         status = input(f"Enter {i} GO/NO-GO Status: ").strip().upper()
+         if status in ("GO", "NO-GO"):
+            system_status[i] = status
+            break
+         else:
+            print("Invalid input. Enter Go or No-go.")
+   print("SYSTEMS POLL COMPLETE")
+   print("\n========== NLAS SYSTEMS POLL ==========\n")
+
+   for system, status in system_status.items():
+      print(f"{system:<15} {status}")
+
+   print("\n---------------------------------------")
+
+   if weather_ok and all(status == "GO" for status in system_status.values()):
+    print("FINAL LAUNCH STATUS: GO")
+    print("---------------------------------------")
     time.sleep(1)
     random_failure()
+   else:
+      hold_procedure()
 
 # ----------------------------------------------------------------
 # FAILURES
@@ -148,13 +186,6 @@ def random_failure():
         countdown()     
    elif failure >= 0 and failure < 90: 
       countdown()
-
-system_status = {
-   "Weather" : "",
-   "Propulsion" : "",
-   "GNC" : "",
-   "Electrical" : ""
-}
 
 # ----------------------------------------------------------------
 # COUNTDOWN/LIFTOFF
@@ -284,11 +315,11 @@ def failure_csv(full_filename):
       writer.writerow([timestamp(), telemetry_dict["mission_state"], info_failure["Failure"]])
 
 # writes time, and weather conditions stored into weather dictionary, if weather scrub is triggered. 
-def scrub_csv():
+def hold_feedback_csv():
       with open(full_filename, "w", newline="") as f:
          writer = csv.writer(f)
-         writer.writerow(["Time", "Wind", "Clouds", "Temp", "Rain"])
-         writer.writerow([timestamp(), weather_info["Wind"], weather_info["Clouds"], weather_info["Temp"], weather_info["Rain"]])
+         writer.writerow(["Time", "Wind", "Clouds", "Temp", "Rain", "Auto WX" "Wx Approval", "Prop", "GNC", "Elec"])
+         writer.writerow([timestamp(), weather_info["Wind"], weather_info["Clouds"], weather_info["Temp"], weather_info["Rain"], system_status["Weather"], system_status["Propulsion"], system_status["GNC"], system_status["Electrical"]])
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
 

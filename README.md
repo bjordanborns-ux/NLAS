@@ -41,7 +41,7 @@ Northlight Launch Awareness System (NLAS) is a Python launch display project bui
 
 ## Weather GO/NO-GO Verification
 
-Eight scenarios were checked against the expected weather decision. All eight matched. The all-clear case returned GO. The simulator returned NO-GO at and beyond each numeric limit and when rain was present. The checks evaluated the weather decision before simulated system failures.
+Eight scenarios were checked against the expected weather decision. All eight matched. The all-clear case returned GO. The simulator returned NO-GO at and beyond each numeric limit and when rain was present. 
 
 ### Verification Results
 
@@ -57,6 +57,25 @@ Eight scenarios were checked against the expected weather decision. All eight ma
 | 8 | Wind below limit, Cloud height below limit, temp. at limit | NO-GO | NO-GO | PASS |
 
 **Verification summary:** 8/8 scenarios produced the expected weather decision.
+
+## Systems GO/NO-GO Verification
+
+Eight verification scenarios were executed to evaluate the NLAS pre-launch GO/NO-GO decision logic. Testing included individual system NO-GO conditions, simultaneous NO-GO conditions, automated weather alerts, nominal launch authorization, and invalid operator inputs. All eight scenarios passed their respective verification criteria. These tests evaluated launch authorization logic prior to the simulation of randomized system failures.
+
+### Verification Results
+
+| Test | WX | Prop | GNC | Elec | Expected | Actual | Result |
+|---|---|---|---|---|---|---|---|
+| 1 | GO | GO | GO | NO-GO | HOLD | HOLD | PASS |
+| 2 | GO | GO | NO-GO | GO | HOLD | HOLD | PASS |
+| 3 | GO | NO-GO | GO | GO | HOLD | HOLD | PASS |
+| 4 | NO-GO | GO | GO | GO | HOLD | HOLD | PASS | 
+| 5 | GO (WX alerted from weather_check) | GO | GO | GO | HOLD | HOLD | PASS |
+| 6 | GO | GO | GO | GO | APPROVED | APPROVED | PASS |
+| 7 | GO | NO-GO | NO-GO | GO | HOLD | HOLD | PASS |
+| 8 | GO | GO | GO | GO | Re-Prompt | Re-Prompted | PASS |
+
+**Verification summary:** 8/8 verification scenarios passed. 7 scenarios validated launch authorization and HOLD status, while one evaluated operator input validation.
 
 ## Example Terminal Output
 
