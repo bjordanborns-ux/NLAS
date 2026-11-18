@@ -9,7 +9,7 @@ print("NorthLight Launch Awareness System")
 filename = input("Enter desired save name: ")
 filename = str(filename)
 
-TEST_MODE = True
+TEST_MODE = False
 
 def timesleep1():
     if not TEST_MODE:
