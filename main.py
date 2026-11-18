@@ -316,9 +316,9 @@ def failure_csv(full_filename):
 
 # writes time, and weather conditions stored into weather dictionary, if weather scrub is triggered. 
 def hold_feedback_csv():
-      with open(full_filename, "w", newline="") as f:
+      with open(full_filename, "a", newline="") as f:
          writer = csv.writer(f)
-         writer.writerow(["Time", "Wind", "Clouds", "Temp", "Rain", "Auto WX" "Wx Approval", "Prop", "GNC", "Elec"])
+         writer.writerow(["Time", "Wind (kts)", "Clouds (ft AGL)", "Temp (Celsius)", "Rain", "Wx Approval", "Prop", "GNC", "Elec"])
          writer.writerow([timestamp(), weather_info["Wind"], weather_info["Clouds"], weather_info["Temp"], weather_info["Rain"], system_status["Weather"], system_status["Propulsion"], system_status["GNC"], system_status["Electrical"]])
 #--------------------------------------------------------------------
 # Start of script running (outside of definitions and functions)
